@@ -1,0 +1,51 @@
+.analytics-wrap { padding: 12px 20px 80px; }
+.period-toggle {
+  display: flex; gap: 6px; margin-bottom: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+}
+.period-btn {
+  flex: 1;
+  padding: 7px;
+  border: none;
+  border-radius: 9px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  background: none;
+  color: var(--muted);
+  transition: all .2s;
+}
+.period-btn.active { background: var(--accent); color: #fff; }
+.big-stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.big-stat-num { font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800; color: var(--accent); line-height: 1; }
+.big-stat-label { color: var(--muted); font-size: 12px; margin-top: 4px; }
+.donut-wrap { position: relative; display: inline-block; }
+svg.donut { display: block; }
+.donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.subject-breakdown { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 12px; }
+.sub-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.sub-row:last-child { margin-bottom: 0; }
+.sub-name { font-size: 12px; flex: 1; }
+.sub-bar-bg { flex: 2; background: var(--border); border-radius: 4px; height: 6px; overflow: hidden; }
+.sub-bar-fill { height: 100%; border-radius: 4px; }
+.sub-pct { font-size: 11px; color: var(--muted); width: 32px; text-align: right; }
+.streak-card {
+  background: linear-gradient(135deg, rgba(124,92,252,.15), rgba(252,92,125,.1));
+  border: 1px solid rgba(124,92,252,.3);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex; align-items: center; gap: 14px;
+}
+.streak-icon { font-size: 32px; }
+.streak-num { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--accent); }
+.streak-label { font-size: 11px; color: var(--muted); }

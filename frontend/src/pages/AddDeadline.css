@@ -1,0 +1,69 @@
+.form-screen { padding: 12px 20px 80px; }
+.form-screen-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 20px;
+}
+.back-btn {
+  width: 36px; height: 36px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.screen-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; display: block; }
+.form-input {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .2s;
+  box-sizing: border-box;
+}
+.form-input:focus { border-color: var(--accent); }
+.form-input::placeholder { color: var(--muted); }
+select.form-input { appearance: none; cursor: pointer; }
+.priority-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.priority-opt {
+  padding: 10px 6px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all .2s;
+}
+.priority-opt .p-icon { font-size: 18px; display: block; margin-bottom: 3px; }
+.priority-opt.selected-auto { border-color: var(--accent); background: rgba(124,92,252,.12); color: var(--accent); }
+.priority-opt.selected-high { border-color: var(--red); background: rgba(255,77,109,.1); color: var(--red); }
+.priority-opt.selected-med { border-color: var(--yellow); background: rgba(255,209,102,.1); color: var(--yellow); }
+.priority-opt.selected-low { border-color: var(--green); background: rgba(77,255,180,.1); color: var(--green); }
+.date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.attach-btn {
+  width: 100%;
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: border-color .2s;
+}
+.attach-btn:hover { border-color: var(--accent); color: var(--accent); }
