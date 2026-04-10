@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
+const { protect } = require('../middleware/authMiddleware');
+const { upload } = require('../utils/cloudinary');
 
 router.post('/login', async (req, res) => {
     try {
@@ -42,6 +44,50 @@ router.post('/register', async (req, res) => {
             });
         } else {
             res.status(400).json({ message: 'Invalid user data' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.put('/profile', protect, upload.single('avatar'), async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (user) {
+            user.name = req.body.name || user.name;
+            user.email = req.body.email || user.email;
+            
+            if (req.file && req.file.path) {
+                user.avatar = req.file.path;
+            }
+            
+            const updatedUser = await user.save();
+            
+            res.json({
+                _id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                avatar: updatedUser.avatar,
+                token: generateToken(updatedUser._id),
+            });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.put('/password', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        
+        if (user && (await user.matchPassword(req.body.oldPassword))) {
+            user.password = req.body.newPassword;
+            await user.save();
+            res.json({ message: 'Password updated successfully' });
+        } else {
+            res.status(401).json({ message: 'Incorrect current password' });
         }
     } catch (error) {
         res.status(500).json({ message: error.message });

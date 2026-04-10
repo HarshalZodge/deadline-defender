@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Onboarding from './pages/Onboarding';
 import Dashboard from './pages/Dashboard';
@@ -12,6 +12,11 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 
 function App() {
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }, []);
+
   return (
     <Router>
       <div className="app-container" style={{ maxWidth: '420px', margin: '0 auto', position: 'relative', minHeight: '100vh', paddingBottom: '0' }}>

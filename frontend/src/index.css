@@ -16,6 +16,15 @@
   --yellow: #ffd166;
 }
 
+[data-theme="light"] {
+  --bg: #f5f5fa;
+  --surface: #ffffff;
+  --card: #e4e4eb;
+  --border: #d0d0dc;
+  --text: #1a1a24;
+  --muted: #6e6e88;
+}
+
 body {
   font-family: 'DM Sans', sans-serif;
   background: var(--bg);

@@ -46,7 +46,12 @@ const Dashboard = () => {
           <div className="dash-greeting">Good morning 👋</div>
           <div className="dash-name">{user.name}</div>
         </div>
-        <div className="avatar">{user.name.charAt(0).toUpperCase()}</div>
+        <div 
+          className="avatar" 
+          style={user?.avatar ? { backgroundImage: `url(${user.avatar})`, backgroundSize: 'cover', backgroundPosition: 'center', color: 'transparent' } : {}}
+        >
+          {user?.avatar ? '' : user.name.charAt(0).toUpperCase()}
+        </div>
       </div>
       
       <div className="stats-row">

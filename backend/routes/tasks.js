@@ -14,27 +14,37 @@ router.route('/')
     })
     .post(protect, async (req, res) => {
         try {
-            const { generateSubtasks, ...taskData } = req.body;
+            let { generateSubtasks, ...taskData } = req.body;
             let subtasks = [];
             
-            if (generateSubtasks && process.env.GEMINI_API_KEY) {
+            if (process.env.GEMINI_API_KEY) {
                 try {
                     const { GoogleGenAI } = require('@google/genai');
                     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-                    const prompt = `Break down the following academic task into 3 to 5 actionable subtasks. Return ONLY a JSON array of strings, nothing else. Task Title: ${taskData.title}. Subject: ${taskData.subject}.`;
                     
-                    const response = await ai.models.generateContent({
-                        model: 'gemini-2.5-flash',
-                        contents: prompt,
-                    });
-                    
-                    let textResp = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
-                    let aiSubtasks = JSON.parse(textResp);
-                    if (Array.isArray(aiSubtasks)) {
-                        subtasks = aiSubtasks.map(title => ({ title, completed: false }));
+                    if (taskData.priority === 'Auto' || !taskData.priority) {
+                        const prioPrompt = `Evaluate the priority (High, Medium, Low) for this academic task: Title: ${taskData.title}, Subject: ${taskData.subject}, Weightage: ${taskData.weightage}%. Return ONLY the word High, Medium, or Low.`;
+                        const prioResp = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prioPrompt });
+                        const rawPrio = prioResp.text.trim();
+                        if (['High', 'Medium', 'Low'].includes(rawPrio)) {
+                            taskData.priority = rawPrio;
+                        } else {
+                            taskData.priority = 'Medium';
+                        }
+                    }
+
+                    if (generateSubtasks) {
+                        const prompt = `Break down the following academic task into 3 to 5 actionable subtasks. Return ONLY a JSON array of strings, nothing else. Task Title: ${taskData.title}. Subject: ${taskData.subject}.`;
+                        const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
+                        
+                        let textResp = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+                        let aiSubtasks = JSON.parse(textResp);
+                        if (Array.isArray(aiSubtasks)) {
+                            subtasks = aiSubtasks.map(title => ({ title, completed: false }));
+                        }
                     }
                 } catch (aiErr) {
-                    console.error('AI Breakdown failed:', aiErr.message);
+                    console.error('AI Processing failed:', aiErr.message);
                 }
             }
 
@@ -113,6 +123,63 @@ router.get('/notifications', protect, async (req, res) => {
         res.json(notifications);
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+});
+
+router.get('/ai-coach', protect, async (req, res) => {
+    try {
+        if (!process.env.GEMINI_API_KEY) return res.json({ message: "Provide a Gemini API key in your .env to unlock AI insights!" });
+        const tasks = await Task.find({ user: req.user._id });
+        const { GoogleGenAI } = require('@google/genai');
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        
+        let completed = tasks.filter(t => t.status === 'Completed').length;
+        let total = tasks.length;
+        let subjects = {};
+        tasks.forEach(t => { if (t.subject) subjects[t.subject] = (subjects[t.subject] || 0) + 1; });
+        
+        const prompt = `Act as an encouraging academic coach. The student has completed ${completed} out of ${total} total tasks. Their subjects include: ${Object.keys(subjects).join(', ')}. Give a 3-sentence motivational evaluation of their progress and strict advice on prioritizing deadlines. No markdown.`;
+        const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
+        res.json({ message: response.text.trim() });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.get('/:id/ai-start', protect, async (req, res) => {
+    try {
+        if (!process.env.GEMINI_API_KEY) return res.json({ message: "Provide a Gemini key to unlock AI!" });
+        const task = await Task.findById(req.params.id);
+        if (!task || task.user.toString() !== req.user._id.toString()) return res.status(401).json({ message: 'Not auth' });
+        
+        const { GoogleGenAI } = require('@google/genai');
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const prompt = `The student is procrastinating on an academic task called "${task.title}" for the subject "${task.subject}". Suggest a hyper-specific, extremely easy 5-minute micro-task they can do RIGHT NOW to break their mental block and start working. Return only the instruction string (1 short sentence).`;
+        
+        const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
+        res.json({ message: response.text.replace(/"/g, '').trim() });
+    } catch(err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+router.post('/:id/ai-summarize', protect, async (req, res) => {
+    try {
+        if (!process.env.GEMINI_API_KEY) return res.status(400).json({ message: "Missing Gemini API key." });
+        const task = await Task.findById(req.params.id);
+        if (!task || task.user.toString() !== req.user._id.toString()) return res.status(401).json({ message: 'Not auth' });
+        if (!task.notes || task.notes.length < 10) return res.status(400).json({ message: 'Notes too short to summarize.' });
+
+        const { GoogleGenAI } = require('@google/genai');
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const prompt = `Summarize the following syllabus or assignment notes into 3 strictly actionable bullet points focused on deliverables. Notes: ${task.notes}`;
+        
+        const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
+        task.notes = response.text.trim();
+        await task.save();
+        res.json(task);
+    } catch(err) {
+        res.status(500).json({ message: err.message });
     }
 });
 

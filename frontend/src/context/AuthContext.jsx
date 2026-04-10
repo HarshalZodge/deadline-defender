@@ -36,6 +36,11 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('userInfo');
     };
 
+    const updateLocalUser = (updatedData) => {
+        setUser(updatedData);
+        localStorage.setItem('userInfo', JSON.stringify(updatedData));
+    };
+
     const token = user ? user.token : null;
 
     const axiosInstance = axios.create({
@@ -46,7 +51,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, axiosInstance, loading }}>
+        <AuthContext.Provider value={{ user, login, register, logout, updateLocalUser, axiosInstance, loading }}>
             {children}
         </AuthContext.Provider>
     );

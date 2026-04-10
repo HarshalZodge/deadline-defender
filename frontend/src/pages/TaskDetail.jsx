@@ -9,6 +9,8 @@ const TaskDetail = () => {
   const { id } = useParams();
   const { user, axiosInstance } = useContext(AuthContext);
   const [task, setTask] = useState(null);
+  const [aiStartTip, setAiStartTip] = useState('');
+  const [isSummarizing, setIsSummarizing] = useState(false);
 
   useEffect(() => {
     if (!user) navigate('/login');
@@ -39,6 +41,29 @@ const TaskDetail = () => {
       } catch (err) {
           console.error(err);
       }
+  };
+
+  const getAiStart = async () => {
+    try {
+      setAiStartTip('AI is thinking...');
+      const { data } = await axiosInstance.get(`/api/tasks/${id}/ai-start`);
+      setAiStartTip(data.message);
+    } catch (err) {
+      setAiStartTip('Failed to get suggestion. Is Gemini API configured?');
+    }
+  };
+
+  const summarizeNotes = async () => {
+    try {
+      setIsSummarizing(true);
+      const { data } = await axiosInstance.post(`/api/tasks/${id}/ai-summarize`);
+      setTask(data);
+      setIsSummarizing(false);
+    } catch (err) {
+      console.error(err);
+      setIsSummarizing(false);
+      alert('Must be >10 characters to summarize!');
+    }
   };
 
   if (!task) return <div style={{padding: '20px', color: 'var(--text)'}}>Loading...</div>;
@@ -86,10 +111,26 @@ const TaskDetail = () => {
         
         {task.notes && (
              <div className="subtasks">
-              <div className="section-title" style={{ marginBottom: '10px' }}>Notes</div>
-              <p style={{fontSize: '13px', color: 'var(--muted)'}}>{task.notes}</p>
+              <div className="section-title" style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                Notes
+                <button onClick={summarizeNotes} disabled={isSummarizing || task.notes.length < 10} style={{ background: 'var(--card)', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '4px 8px', borderRadius: '4px', fontSize: '10px', cursor: 'pointer' }}>
+                  {isSummarizing ? "Working..." : "✨ Summarize"}
+                </button>
+              </div>
+              <p style={{fontSize: '13px', color: 'var(--muted)', whiteSpace: 'pre-line'}}>{task.notes}</p>
             </div>
         )}
+
+        <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+            <button onClick={getAiStart} style={{ width: '100%', background: 'linear-gradient(90deg, var(--accent), #9b72ff)', color: 'white', padding: '12px', borderRadius: '12px', border: 'none', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'Inter' }}>
+              ✨ How Do I Start?
+            </button>
+            {aiStartTip && (
+                <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(124,92,252,.1)', borderLeft: '4px solid var(--accent)', borderRadius: '0 8px 8px 0', fontSize: '14px', color: 'var(--text)' }}>
+                    <b>AI Suggestion:</b> {aiStartTip}
+                </div>
+            )}
+        </div>
         
         {task.status !== 'Completed' && <button className="btn-complete" onClick={markComplete}>✅ Mark as Complete</button>}
         <div className="btn-row">
