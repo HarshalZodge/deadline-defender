@@ -22,6 +22,23 @@ const Settings = () => {
   // Password State
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
+  
+  const handleConnectGoogle = () => {
+     window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/classroom/auth?token=${user.token}`;
+  };
+
+  const handleSyncGoogle = async () => {
+      try {
+          setIsSyncing(true);
+          const { data } = await axiosInstance.get('/api/classroom/sync');
+          alert(data.message);
+      } catch (err) {
+          alert(err.response?.data?.message || 'Failed to sync. Please try reconnecting your account.');
+      } finally {
+          setIsSyncing(false);
+      }
+  };
 
   useEffect(() => {
     if (!user) navigate('/login');
@@ -138,6 +155,11 @@ const Settings = () => {
                 <div className="settings-text">Privacy & Security</div>
                 <div className="settings-arrow">→</div>
               </div>
+              <div className="settings-item" onClick={() => setActiveMenu('classroom')}>
+                <div className="settings-icon">🎓</div>
+                <div className="settings-text">Google Classroom Sync</div>
+                <div className="settings-arrow">→</div>
+              </div>
               <div className="settings-item" onClick={() => setActiveMenu('help')}>
                 <div className="settings-icon">ℹ️</div>
                 <div className="settings-text">Help & Support</div>
@@ -214,6 +236,28 @@ const Settings = () => {
                <h3 style={{color: 'var(--text)', marginBottom: '10px'}}>DeadlineDefender v1.2</h3>
                <p style={{color: 'var(--muted)', fontSize: '14px', marginBottom: '20px'}}>Your smart academic sidekick. Powered by Google Gemini AI.</p>
                <a href="mailto:support@deadlinedefender.local" style={{color: 'var(--accent)', textDecoration: 'none', fontWeight: 'bold'}}>✉️ Contact Support</a>
+            </div>
+          </>
+        )}
+
+        {activeMenu === 'classroom' && (
+          <>
+            {renderHeader('Google Classroom')}
+            <div style={{background: 'var(--card)', padding: '20px', borderRadius: '14px', marginTop: '20px', textAlign: 'center'}}>
+               <div style={{fontSize: '40px', marginBottom:'10px'}}>📚</div>
+               <h3 style={{color: 'var(--text)', marginBottom: '10px'}}>Sync Coursework</h3>
+               <p style={{color: 'var(--muted)', fontSize: '14px', marginBottom: '20px', lineHeight: '1.5'}}>
+                  Connect your Google Classroom account to automatically import all your pending assignments into DeadlineDefender.
+               </p>
+               {user?.googleAccessToken ? (
+                  <button className="btn-primary" onClick={handleSyncGoogle} disabled={isSyncing} style={{background: 'var(--green)', boxShadow: '0 8px 24px rgba(77, 255, 180, 0.25)'}}>
+                     {isSyncing ? 'Fetching Data...' : '🔄 Pull Latest Assignments'}
+                  </button>
+               ) : (
+                  <button className="btn-primary" onClick={handleConnectGoogle} style={{background: 'var(--accent)'}}>
+                     🔗 Connect Account
+                  </button>
+               )}
             </div>
           </>
         )}

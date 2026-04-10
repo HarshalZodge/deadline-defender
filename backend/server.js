@@ -8,6 +8,7 @@ dotenv.config();
 const taskRoutes = require('./routes/tasks');
 const userRoutes = require('./routes/users');
 const cronRoutes = require('./routes/cron');
+const classroomRoutes = require('./routes/classroom');
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use('/api/tasks', taskRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/cron', cronRoutes);
+app.use('/api/classroom', classroomRoutes);
 
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
